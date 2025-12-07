@@ -1,11 +1,16 @@
 import express from "express";
-import { prisma } from "../config/prisma.js";
+import {
+  deletePost,
+  getAllPosts,
+  getPost,
+  postPost,
+} from "../services/service.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const posts = await prisma.pages.findMany();
+    const posts = await getAllPosts();
     res.json(posts);
   } catch (err) {
     console.error(err);
@@ -16,11 +21,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const postId = parseInt(req.params.id);
   try {
-    const post = await prisma.pages.findUnique({
-      where: {
-        id: postId,
-      },
-    });
+    const post = await getPost(postId);
     res.send(`<h1>${post?.title}</h1><p>${post?.content}</p>`);
   } catch (err) {
     console.error(err);
@@ -30,23 +31,17 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    await prisma.pages.create({
-      data: req.body,
-    });
-    res.sendStatus(201).json({ message: "post added" });
+    await postPost(req.body);
+    res.status(201).json({ message: "post added" });
   } catch (err) {
     res.status(500).json({ err });
   }
 });
 
 router.delete("/:id", async (req, res) => {
-  const pageId = parseInt(req.params.id);
+  const postId = parseInt(req.params.id);
   try {
-    await prisma.pages.delete({
-      where: {
-        id: pageId,
-      },
-    });
+    await deletePost(postId);
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ err });
