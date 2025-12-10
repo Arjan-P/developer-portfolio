@@ -22,7 +22,7 @@ router.get("/:id", async (req, res) => {
   const postId = parseInt(req.params.id);
   try {
     const post = await getPost(postId);
-    res.send(`<h1>${post?.title}</h1><p>${post?.content}</p>`);
+    res.json(post);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch posts" });
