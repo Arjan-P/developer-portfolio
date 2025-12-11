@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import type { Post } from "../types/Post";
 
 export default function Posts() {
@@ -18,6 +18,7 @@ export default function Posts() {
       <p>
         {post.content}
       </p>
+      <Link to={'/'}>Back to Home</Link>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import {
   getPost,
   postPost,
 } from "../services/service.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     await postPost(req.body);
     res.status(201).json({ message: "post added" });
@@ -38,8 +39,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  const postId = parseInt(req.params.id);
+router.delete("/:id", authMiddleware, async (req, res) => {
+  const postId = parseInt(<string>req.params.id);
   try {
     await deletePost(postId);
     res.status(200).json({ message: "Deleted successfully" });
