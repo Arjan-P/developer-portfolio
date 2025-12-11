@@ -3,8 +3,12 @@ import App from '../App'
 import Home from '../pages/Home'
 import Posts from "../pages/Posts" 
 import Login from "../pages/Login"
-import Admin from "../pages/Admin"
 import ProtectedRotue from "../components/ProtectedRoute"
+import AdminLayout from "../pages/admin/AdminLayout"
+import Dashboard from "../pages/admin/Dashboard"
+import AddPost from "../pages/admin/AddPost"
+import EditPost from "../pages/admin/EditPost"
+
 
 export const router = createBrowserRouter([
   {
@@ -18,9 +22,14 @@ export const router = createBrowserRouter([
         path: "admin",
         element: (
           <ProtectedRotue>
-            <Admin />
+            <AdminLayout />
           </ProtectedRotue>
         ),
+        children: [
+          {path: "", element: <Dashboard />},
+          {path: "add", element: <AddPost />},
+          {path: "edit/:id", element: <EditPost />}
+        ]
       },
     ],
   },

@@ -16,6 +16,16 @@ export function postPost(data: { title: string; content: string }) {
   return prisma.pages.create({ data });
 }
 
+export function updatePost(
+  id: number,
+  data: { title: string; content: string },
+) {
+  return prisma.pages.update({
+    where: { id },
+    data,
+  });
+}
+
 export function deletePost(postId: number) {
   return prisma.pages.delete({ where: { id: postId } });
 }
