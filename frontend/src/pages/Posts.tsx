@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import type { Post } from "../types/Post";
+import MarkdownRendered from "../components/MarkdownRendered";
 
 export default function Posts() {
   const {id} = useParams();
@@ -10,15 +11,12 @@ export default function Posts() {
     .then(res => res.json())
     .then(data => setPost(data));
   }, [])
-  if(!post) return <p>Loading...</p>;
+  if(!post) return <section className="py-8">Loading...</section>;
   
   return (
-    <div>
+    <section className="py-8">
       <h1>{post.title}</h1>
-      <p>
-        {post.content}
-      </p>
-      <Link to={'/'}>Back to Home</Link>
-    </div>
+      <MarkdownRendered  markdown={post.contentMd} />
+    </section>
   )
 }

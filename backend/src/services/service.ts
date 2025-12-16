@@ -12,7 +12,7 @@ export function getPost(postId: number) {
   });
 }
 
-export function postPost(data: { title: string; content: string }) {
+export function postPost(data: { title: string; contentMd: string }) {
   return prisma.pages.create({ data });
 }
 

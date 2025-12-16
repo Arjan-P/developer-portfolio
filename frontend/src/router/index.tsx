@@ -1,6 +1,8 @@
 import {createBrowserRouter} from "react-router-dom"
 import App from '../App'
 import Home from '../pages/Home'
+import Blog from '../pages/Blog'
+import BlogHome from "../pages/BlogHome"
 import Posts from "../pages/Posts" 
 import Login from "../pages/Login"
 import ProtectedRotue from "../components/ProtectedRoute"
@@ -16,7 +18,14 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: "", element: <Home /> },
-      { path: "posts/:id", element: <Posts /> },
+      {
+        path: "blog",
+        element: <Blog />,
+        children: [
+          { path: "", element: <BlogHome />},
+          { path: "posts/:id", element: <Posts /> },
+        ],
+      },
       { path: "login", element: <Login /> },
       {
         path: "admin",
@@ -30,7 +39,7 @@ export const router = createBrowserRouter([
           {path: "add", element: <AddPost />},
           {path: "edit/:id", element: <EditPost />}
         ]
-      },
+     },
     ],
   },
 ]);

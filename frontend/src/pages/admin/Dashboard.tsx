@@ -7,8 +7,8 @@ export default function Dashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
   useEffect(() => {
     fetch("/api/posts")
-    .then(res => res.json())
-    .then(data => setPosts(data));
+      .then(res => res.json())
+      .then(data => setPosts(data));
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -18,8 +18,8 @@ export default function Dashboard() {
         Authorization: `${token}`
       }
     });
-    if(res.ok){
-     setPosts(prev => prev.filter(a => a.id !== id)); // update UI 
+    if (res.ok) {
+      setPosts(prev => prev.filter(a => a.id !== id)); // update UI 
     }
   }
   return (
@@ -29,11 +29,13 @@ export default function Dashboard() {
       <ul style={{ listStyle: "none", padding: 0 }}>
         {posts.map(post => (
           <li key={post.id}>
-            {post.title}
-            <Link to={`/admin/edit/${post.id}`}>
-              <button>Edit</button>
-            </Link>
-            <button onClick={() => handleDelete(post.id)}>Delete</button>
+            <div className="flex flex-row justify-between items-center">
+              {post.title}
+              <Link to={`/admin/edit/${post.id}`}>
+                <button>Edit</button>
+              </Link>
+              <button onClick={() => handleDelete(post.id)}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>

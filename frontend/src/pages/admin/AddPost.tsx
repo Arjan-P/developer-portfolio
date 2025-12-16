@@ -1,7 +1,7 @@
 import { useState } from "react"
 export default function AddPost() {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [contentMd, setContentMd] = useState("");
   const [msg, setMsg] = useState("");
   const token = localStorage.getItem("token");
 
@@ -14,7 +14,7 @@ export default function AddPost() {
           "Content-Type": "application/json",
           Authorization: `${token}`
         },
-        body: JSON.stringify({title, content}),
+        body: JSON.stringify({title, contentMd}),
       });
       const data: {message: string} = await res.json();
       setMsg(data.message);
@@ -39,9 +39,9 @@ export default function AddPost() {
 
         <textarea
           placeholder="Content"
-          value={content}
+          value={contentMd}
           rows={10}
-          onChange={e => setContent(e.target.value)}
+          onChange={e => setContentMd(e.target.value)}
         /><br/>
 
         <button type="submit">Submit</button>

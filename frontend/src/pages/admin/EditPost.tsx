@@ -14,7 +14,7 @@ export default function EditPost() {
     .then(res => res.json() as Promise<Post>)
     .then(data => {
       setTitle(data.title);
-      setContent(data.content);
+      setContent(data.contentMd);
     });
   }, [id]);
 

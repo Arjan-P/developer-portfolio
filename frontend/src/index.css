@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@theme {
+/* Gray Asparagus*/
+--color-gray-asparagus-50: #f3f6f4;
+--color-gray-asparagus-100: #e2e9e2;
+--color-gray-asparagus-200: #c6d4c7;
+--color-gray-asparagus-300: #a0b5a3;
+--color-gray-asparagus-400: #76917a;
+--color-gray-asparagus-500: #56735b;
+--color-gray-asparagus-600: #3e5643;
+--color-gray-asparagus-700: #344838;
+--color-gray-asparagus-800: #2b3a2f;
+--color-gray-asparagus-900: #243027;
+--color-gray-asparagus-950: #131b15;  
+/* Vanilla */
+--color-vanilla-50: #faf6f2;
+--color-vanilla-100: #f4ebe0;
+--color-vanilla-200: #e7d5c1;
+--color-vanilla-300: #dfc6ac;
+--color-vanilla-400: #c79770;
+--color-vanilla-500: #bb7e54;
+--color-vanilla-600: #ae6b48;
+--color-vanilla-700: #91563d;
+--color-vanilla-800: #754637;
+--color-vanilla-900: #5f3b2f;
+--color-vanilla-950: #331d17;
+}
+
+@layer base {
+  h1 {
+    @apply text-2xl font-bold;
+  }
+
+  h2 {
+    @apply text-xl font-semibold;
+  }
+
+  h3 {
+    @apply text-lg font-semibold;
+  }
+}
+
