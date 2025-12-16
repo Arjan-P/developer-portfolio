@@ -7,6 +7,7 @@ import {
   updatePost,
 } from "../services/service.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -39,6 +40,20 @@ router.post("/", authMiddleware, async (req, res) => {
     res.status(500).json({ err });
   }
 });
+
+router.post("/upload", authMiddleware, upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  const { title } = req.body;
+  const contentMd = req.file.buffer.toString('utf-8');
+  try {
+    await postPost({ title, contentMd });
+    res.status(201).json({ message: "post added" });
+  } catch (err) {
+    res.status(500).json({ err });
+  }
+})
 
 router.put("/:id", authMiddleware, async (req, res) => {
   const postId = parseInt(<string>req.params.id);
