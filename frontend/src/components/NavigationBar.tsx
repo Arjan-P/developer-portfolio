@@ -42,7 +42,7 @@ export default function NavigationBar() {
         className="
           absolute bottom-0 h-0.5
           bg-gray-asparagus-900
-          transition-all duration-300 ease-out
+          transition-all duration-400 ease-out
         "
         style={{
           left: style.left,

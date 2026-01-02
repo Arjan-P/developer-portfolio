@@ -5,14 +5,15 @@ import FooterBar from './components/FooterBar'
 
 function App() {
   return (
-    <div className='min-h-screen grid grid-rows-[auto_1fr_auto] bg-gray-asparagus-500'>
-      <header>
+    <div className='h-screen grid grid-rows-[auto_1fr_auto] bg-gray-asparagus-500 overflow-hidden'>
+      <header className='sticky top z-50'>
         <NavigationBar />
       </header>
       {/* Pages render here */}
-      <main className='w-full px-1'>
-        <div className='w-full h-full px-4 rounded-xl shadow-xl bg-vanilla-200'>
-          <div className="mx-auto max-w-6xl px-4 text-vanilla-900">
+      <main className='h-full w-full px-1 overflow-hidden'>
+
+        <div className='w-full h-full px-4 rounded-xl shadow-xl bg-vanilla-200 overflow-hidden'>
+          <div className="mx-auto max-w-6xl px-4 text-vanilla-900 h-full flex flex-col overflow-y-auto">
            <Outlet />
            </div>
         </div>

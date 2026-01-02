@@ -1,4 +1,4 @@
-export default function Blog() {
+export default function Home() {
   return (
 
     <section className="py-8">
