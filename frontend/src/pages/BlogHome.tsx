@@ -5,7 +5,7 @@ import type { Post } from "../types/Post";
 export default function BlogHome() {
   const [posts, setPosts] = useState<Post[]>([]);
   useEffect(() => {
-    fetch("/api/posts")
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/posts`)
       .then(res => res.json())
       .then(data => setPosts(data));
   }, []);

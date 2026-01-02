@@ -10,7 +10,7 @@ export default function EditPost() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch(`/api/posts/${id}`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/posts/${id}`)
     .then(res => res.json() as Promise<Post>)
     .then(data => {
       setTitle(data.title);

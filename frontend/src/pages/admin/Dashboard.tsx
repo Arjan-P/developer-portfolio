@@ -12,7 +12,7 @@ export default function Dashboard() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`/api/posts/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/posts/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `${token}`
