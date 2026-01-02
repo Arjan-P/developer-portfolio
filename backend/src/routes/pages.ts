@@ -1,4 +1,5 @@
 import express from "express";
+import type {Request, Response} from "express";
 import {
   deletePost,
   getAllPosts,
@@ -11,7 +12,7 @@ import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const posts = await getAllPosts();
     res.status(200).json(posts);
@@ -21,8 +22,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
-  const postId = parseInt(req.params.id);
+router.get("/:id", async (req: Request, res: Response) => {
+  const postId = Number(req.params.id);
   try {
     const post = await getPost(postId);
     res.status(200).json(post);
@@ -32,7 +33,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req: Request, res: Response) => {
   try {
     await postPost(req.body);
     res.status(201).json({ message: "post added" });
@@ -41,7 +42,7 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/upload", authMiddleware, upload.single('file'), async (req, res) => {
+router.post("/upload", authMiddleware, upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
@@ -55,7 +56,7 @@ router.post("/upload", authMiddleware, upload.single('file'), async (req, res) =
   }
 })
 
-router.put("/:id", authMiddleware, async (req, res) => {
+router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
   const postId = parseInt(<string>req.params.id);
   const { title, content } = req.body;
   try {
@@ -66,7 +67,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-router.delete("/:id", authMiddleware, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req: Request, res: Response) => {
   const postId = parseInt(<string>req.params.id);
   try {
     await deletePost(postId);
