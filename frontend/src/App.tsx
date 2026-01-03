@@ -5,21 +5,21 @@ import FooterBar from './components/FooterBar'
 
 function App() {
   return (
-    <div className='h-screen grid grid-rows-[clamp(3rem,6vh,4.5rem)_1fr_clamp(3.5rem,8vh,5.5rem)]
- bg-gray-asparagus-500 overflow-hidden'>
+    <div className='h-screen overflow-auto-y grid grid-rows-[clamp(3rem,6vh,4.5rem)_1fr_clamp(3.5rem,8vh,5.5rem)]
+ bg-gray-asparagus-500'>
       <header>
         <NavigationBar />
       </header>
       {/* Pages render here */}
-      <main className='h-full w-full px-1 overflow-hidden'>
+      <main className='h-full w-full px-1'>
 
-        <div className='w-full h-full px-4 rounded-xl shadow-xl bg-vanilla-200 overflow-hidden'>
-          <div className="mx-auto max-w-6xl px-4 text-vanilla-900 h-full flex flex-col overflow-y-auto">
+        <div className='w-full h-full px-4 rounded-xl shadow-xl bg-vanilla-200'>
+          <div className="mx-auto max-w-6xl px-4 text-vanilla-900 h-full flex flex-col">
             <Outlet />
           </div>
         </div>
       </main>
-      <footer className="h-[clamp(3.5rem,8vh,5.5rem)]">
+      <footer>
         <FooterBar />
       </footer>
     </div>
