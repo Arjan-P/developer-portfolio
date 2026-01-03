@@ -1,12 +1,12 @@
 export default function FooterBar() {
   return (
-    <div className="flex items-center justify-center gap-6 h-20 px-4">
+    <div className="flex items-center justify-center gap-6 h-full px-4">
       
       <a
         href="https://github.com/Arjan-P"
         target="_blank"
         rel="noopener noreferrer"
-        className="h-[60%] aspect-square text-gray-asparagus-900 hover:text-gray-asparagus-400 transition-colors"
+        className="h-2/3 aspect-square text-gray-asparagus-900 hover:text-gray-asparagus-400 transition-colors"
         aria-label="GitHub"
       >
         <svg
