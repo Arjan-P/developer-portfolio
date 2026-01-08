@@ -6,7 +6,7 @@ export default function Dashboard() {
   const token = localStorage.getItem("token");
   const [posts, setPosts] = useState<Post[]>([]);
   useEffect(() => {
-    fetch("/api/posts")
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/posts`)
       .then(res => res.json())
       .then(data => setPosts(data));
   }, []);
