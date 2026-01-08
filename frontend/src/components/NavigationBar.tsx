@@ -31,7 +31,7 @@ export default function NavigationBar() {
   return (
     <nav
       ref={containerRef}
-      className="relative flex items-center gap-6 h-full px-4"
+      className="relative flex items-center gap-6 h-full px-4 "
     >
       {tabs.map((tab) => (
         <NavigationBarIcon key={tab.to} {...tab} />

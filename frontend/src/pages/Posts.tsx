@@ -7,7 +7,7 @@ export default function Posts() {
   const { id } = useParams();
   const [post, setPost] = useState<Post>();
   useEffect(() => {
-    fetch(`/api/posts/${id}`)
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/posts/${id}`)
       .then(res => res.json())
       .then(data => setPost(data));
   }, [])

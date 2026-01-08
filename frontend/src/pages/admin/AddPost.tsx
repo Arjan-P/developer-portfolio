@@ -3,6 +3,7 @@ import { useState } from 'react';
 export default function UploadPost() {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [images, setImages] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,12 +18,20 @@ export default function UploadPost() {
 
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('file', file);
+    formData.append('markdown', file);
+    if (images) {
+
+      for (const image of images) {
+        formData.append('images', image);
+        console.log(image.name, "added");
+      }
+    }
 
     try {
       setLoading(true);
       setError(null);
 
+      console.log(formData);
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/posts/upload`, {
         headers: {
           Authorization: `${token}`
@@ -63,7 +72,14 @@ export default function UploadPost() {
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="block"
       />
-
+      {/* Image input */}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => setImages(e.target.files ?? null)}
+        className="block"
+      />
       {/* Error */}
       {error && <p className="text-red-600">{error}</p>}
 
