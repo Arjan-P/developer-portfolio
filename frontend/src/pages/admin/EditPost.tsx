@@ -20,7 +20,7 @@ export default function EditPost() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch(`/api/posts/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/posts/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
