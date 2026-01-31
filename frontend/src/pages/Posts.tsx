@@ -15,12 +15,20 @@ export default function Posts() {
 
   return (
     <section className="py-8">
-      <div className="flex flex-col gap-5 my-2 divide-y divide-gray-asparagus-300">
-        <h1>{post.title}</h1>
-        <div>
+      <div className="flex flex-col divide-y divide-gray-asparagus-300">
+        <div className="pb-6">
+          <h1>{post.title}</h1>
+        </div>
+
+        <div className="py-6">
           <MarkdownRendered markdown={post.contentMd} />
         </div>
-        <Link to="/blog" className="link-underline">{`< Back`}</Link>
+
+        <div className="pt-6">
+          <Link to="/blog" className="link-underline">
+            &lt; Back
+          </Link>
+        </div>
       </div>
     </section>
   )
