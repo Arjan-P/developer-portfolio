@@ -6,7 +6,7 @@ export default function EditPost() {
   const {id} = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [contentMd, setContentMd] = useState("");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export default function EditPost() {
     .then(res => res.json() as Promise<Post>)
     .then(data => {
       setTitle(data.title);
-      setContent(data.contentMd);
+      setContentMd(data.contentMd);
     });
   }, [id]);
 
@@ -26,7 +26,7 @@ export default function EditPost() {
         "Content-Type": "application/json",
         Authorization: `${token}`
       },
-      body: JSON.stringify({ title, content }),
+      body: JSON.stringify({ title, contentMd }),
     });
     if(res.ok){
       navigate('/admin');
@@ -46,9 +46,9 @@ export default function EditPost() {
 
         <textarea
           placeholder="Content"
-          value={content}
+          value={contentMd}
           rows={10}
-          onChange={e => setContent(e.target.value)}
+          onChange={e => setContentMd(e.target.value)}
         /><br/>
 
         <button type="submit">Submit</button>

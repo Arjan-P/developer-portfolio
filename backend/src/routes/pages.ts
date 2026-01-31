@@ -94,10 +94,10 @@ router.post("/upload", authMiddleware, uploadPostAssets, async (req: Request, re
 })
 
 router.put("/:id", authMiddleware, async (req: Request, res: Response) => {
-  const postId = Number(req.params.id);
-  const { title, content } = req.body;
+  const postId = parseInt(req.params.id);
+  const { title, contentMd } = req.body;
   try {
-    const update = await updatePost(postId, { title, content });
+    const update = await updatePost(postId, { title, contentMd });
     res.status(200).json(update);
   } catch (err) {
     res.status(500).json({ error: "Failed to update post" });

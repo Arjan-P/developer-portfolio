@@ -18,7 +18,7 @@ export function postPost(data: { title: string; contentMd: string }) {
 
 export function updatePost(
   id: number,
-  data: { title: string; content: string },
+  data: { title: string; contentMd: string },
 ) {
   return prisma.pages.update({
     where: { id },
