@@ -25,7 +25,7 @@ export default function PostCard({ post }: PostCardProp) {
             {formatDate(post.createdAt)}
           </time>
         </div>
-        <MarkdownRendered markdown={post.contentMd.substring(0, 80)} />
+        <MarkdownRendered markdown={post.contentMd.substring(0, 80) + "..."} />
         <Link
           to={`/blog/posts/${post.id}`}
           className="link-underline"
