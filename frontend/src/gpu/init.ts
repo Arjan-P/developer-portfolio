@@ -1,5 +1,30 @@
+const fadeShader = `
+struct VSOut {
+  @builtin(position) position: vec4<f32>,
+};
+
+@vertex
+fn vs_main(@builtin(vertex_index) index: u32) -> VSOut {
+    var pos = array<vec2<f32>, 3>(
+        vec2<f32>(-1.0, -1.0),
+        vec2<f32>( 3.0, -1.0),
+        vec2<f32>(-1.0,  3.0)
+    );
+
+    var out: VSOut;
+    out.position = vec4<f32>(pos[index], 0.0, 1.0);
+    return out;
+}
+
+@fragment
+fn fs_main() -> @location(0) vec4<f32> {
+  // Very small alpha = slow fade
+  return vec4<f32>(0.0, 0.0, 0.0, 0.05);
+}
+
+`
 const computeCode =
-`struct Params {
+  `struct Params {
     time: f32,
     dt: f32,
     count: u32,
@@ -106,20 +131,50 @@ var<storage, read> particles : array<vec2<f32>>;
 
 struct VSOut {
     @builtin(position) pos : vec4<f32>,
+    @location(0) uv: vec2<f32>,
 };
 
 @vertex
-fn vs_main(@builtin(vertex_index) index : u32) -> VSOut {
-    let p = particles[index];
+fn vs_main(@builtin(vertex_index) cornerIndex : u32, @builtin(instance_index) particleIndex : u32) -> VSOut {
+    let center = particles[particleIndex];
+    var offset = vec2<f32>(0.0);
+    
+    switch(cornerIndex) {
+      case 0u: { offset = vec2<f32>(-1.0, -1.0); }
+      case 1u: { offset = vec2<f32>( 1.0, -1.0); }
+      case 2u: { offset = vec2<f32>(-1.0,  1.0); }
 
-    var out : VSOut;
-    out.pos = vec4<f32>(p, 0.0, 1.0);
+      case 3u: { offset = vec2<f32>(-1.0,  1.0); }
+      case 4u: { offset = vec2<f32>( 1.0, -1.0); }
+      case 5u: { offset = vec2<f32>( 1.0,  1.0); }
+
+      default: {}
+    }
+    let size = 0.002;
+    
+
+    var out: VSOut;
+    out.pos = vec4<f32>(center + offset * size, 0.0, 1.0);
+    out.uv = offset * 0.5 + vec2<f32>(0.5);
+
     return out;
 }
 
+
 @fragment
-fn fs_main() -> @location(0) vec4<f32> {
-    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+fn fs_main(in: VSOut) -> @location(0) vec4<f32> {
+
+  // Make circular particle
+  let dist = distance(in.uv, vec2<f32>(0.5));
+  if (dist > 0.5) {
+    discard;
+  }
+
+  // let t = 0.5 + 0.5 * sin(param.time);
+  // let colorA = vec3<f32>(0.75, 0.38, 1.0);
+  // let colorB = vec3<f32>(0.0, 0.0, 0.0);
+  // let color = mix(colorB, colorA, t);
+  return vec4<f32>(1.0, 1.0, 1.0, 1.0);
 }
 `;
 
@@ -139,14 +194,13 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
   context.configure({
     device,
     format,
-    alphaMode: "premultiplied",
+    alphaMode: "opaque",
   });
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   const PARTICLE_COUNT = 80_000;
-  //const PARTICLE_SIZE = 4 * 4; // 4 floats * 4 bytes
 
   const particleData = new Float32Array(PARTICLE_COUNT * 2);
 
@@ -188,6 +242,42 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     },
   });
 
+  const fadeModule = device.createShaderModule({
+    code: fadeShader
+  });
+
+  const fadePipeline = device.createRenderPipeline({
+    layout: "auto",
+    vertex: {
+      module: fadeModule,
+      entryPoint: "vs_main",
+    },
+
+    fragment: {
+      module: fadeModule,
+      entryPoint: "fs_main",
+      targets: [{
+        format,
+        blend: {
+          color: {
+            srcFactor: "src-alpha",
+            dstFactor: "one-minus-src-alpha",
+            operation: "add",
+          },
+          alpha: {
+            srcFactor: "one",
+            dstFactor: "one-minus-src-alpha",
+            operation: "add",
+          },
+        }
+      }],
+    },
+    primitive: {
+      topology: "triangle-list",
+    },
+  });
+
+
 
   const shaderModule = device.createShaderModule({
     code: shaderCode,
@@ -219,10 +309,23 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
       entryPoint: "fs_main",
       targets: [{
         format,
+        blend: {
+          color: {
+            srcFactor: "one",
+            dstFactor: "one",
+            operation: "add",
+          },
+          alpha: {
+            srcFactor: "one",
+            dstFactor: "one",
+            operation: "add",
+          },
+        },
       }],
+
     },
     primitive: {
-      topology: "point-list",  // = GL_POINTS
+      topology: "triangle-list",  // = GL_POINTS
     },
   });
 
@@ -240,19 +343,21 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
   let animationId: number;
   let lastTime = performance.now();
+  //let firstFrame = true;
 
   function frame() {
     const encoder = device.createCommandEncoder();
     const now = performance.now();
-    const dt = (now - lastTime) / 1000;
+    const dtRaw = (now - lastTime) / 1000;
+    const dt = Math.min(dtRaw, 0.016);
     lastTime = now;
     const time = now / 1000;
-
     device.queue.writeBuffer(
       uniformBuffer,
       0,
       new Float32Array([time, dt, PARTICLE_COUNT, 0])
     );
+
     // --- COMPUTE ---
 
     const computePass = encoder.beginComputePass();
@@ -265,23 +370,27 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
     computePass.end();
 
-
+    const currentTexture = context.getCurrentTexture();
 
     const renderPass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: context.getCurrentTexture().createView(),
-          loadOp: "clear",
-          storeOp: "store",
-          clearValue: { r: 1.0, g: 1.0, b: 1.0, a: 1 },
-        },
-      ],
+      colorAttachments: [{
+        view: currentTexture.createView(),
+        loadOp: "load",
+        storeOp: "store",
+      }],
     });
 
+    // --- FADE ---
+    renderPass.setPipeline(fadePipeline);
+    renderPass.draw(3);
+
+    // --- DRAW ---
     renderPass.setPipeline(renderPipeline);
     renderPass.setBindGroup(0, renderBindGroup);
-    renderPass.draw(PARTICLE_COUNT);
+    renderPass.draw(6, PARTICLE_COUNT);
     renderPass.end();
+
+
     device.queue.submit([encoder.finish()]);
 
     animationId = requestAnimationFrame(frame);
