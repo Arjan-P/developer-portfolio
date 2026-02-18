@@ -19,17 +19,22 @@ fn vs_main(@builtin(vertex_index) index: u32) -> VSOut {
 @fragment
 fn fs_main() -> @location(0) vec4<f32> {
   // Very small alpha = slow fade
-  return vec4<f32>(0.0, 0.0, 0.0, 0.05);
+  return vec4<f32>(0.0, 0.0, 0.0, 0.03);
 }
 
 `
 const computeCode =
-  `struct Params {
-    time: f32,
-    dt: f32,
-    count: u32,
-    _pad: u32, // 16-byte alignment required
+  `
+  struct Params {
+    time: f32,        // 4
+    dt: f32,          // 4
+    count: u32,       // 4
+    _pad: u32,        // 4   → 16 bytes
+
+    mouse: vec2<f32>, // 8
+    _pad2: vec2<f32>, // 8   → 16 bytes
 };
+
 
 @group(0) @binding(0)
 var<storage, read_write> particles: array<vec2<f32>>;
@@ -109,15 +114,15 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
     var p = particles[id];
 
-    // Simple movement for now (replace with full Perlin later)
     let scale = 3.0;
     let offset = vec2<f32>(params.time * 0.2, params.time * 0.173);
     let sp = p * scale  + offset;
     let n = perlin(sp);
     let angle = n * 6.283185;
-    let dir = vec2<f32>(cos(angle), sin(angle));
-    p += dir * params.dt * 0.09;
 
+    var dir = vec2<f32>(cos(angle), sin(angle));
+    p += dir * params.dt * 0.09;
+    
     if (p.x > 1.0 || p.x < -1.0 || p.y > 1.0 || p.y < -1.0) {
         p = random2(id, params.time);
     }
@@ -178,6 +183,39 @@ fn fs_main(in: VSOut) -> @location(0) vec4<f32> {
 }
 `;
 
+const historySamplerShader = `
+@group(0) @binding(0)
+var historyTex: texture_2d<f32>;
+
+@group(0) @binding(1)
+var historySampler: sampler;
+
+struct VSOut {
+    @builtin(position) pos: vec4<f32>,
+    @location(0) uv: vec2<f32>,
+};
+
+@vertex
+fn vs_main(@builtin(vertex_index) i: u32) -> VSOut {
+    var pos = array<vec2<f32>, 3>(
+        vec2(-1.0, -1.0),
+        vec2( 3.0, -1.0),
+        vec2(-1.0,  3.0)
+    );
+
+    var out: VSOut;
+    out.pos = vec4(pos[i], 0.0, 1.0);
+    out.uv = (pos[i] + 1.0) * 0.5;
+    return out;
+}
+
+@fragment
+fn fs_main(in: VSOut) -> @location(0) vec4<f32> {
+    return textureSample(historyTex, historySampler, in.uv);
+}
+
+`
+
 export async function initWebGPU(canvas: HTMLCanvasElement) {
   if (!navigator.gpu) {
     console.error("WebGPU not supported");
@@ -199,8 +237,25 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  let mouse = {
+    x: 0,
+    y: 0
+  }
 
-  const PARTICLE_COUNT = 80_000;
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const nx = x / canvas.width;
+    const ny = y / canvas.height;
+    const ndcX = nx * 2 - 1;
+    const ndcY = ny * -2 + 1;
+    mouse.x = ndcX;
+    mouse.y = ndcY;
+    console.log(ndcX, ndcY);
+  });
+
+  const PARTICLE_COUNT = 50_000;
 
   const particleData = new Float32Array(PARTICLE_COUNT * 2);
 
@@ -220,7 +275,7 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
   });
 
   // buffer for uniforms
-  const uniformBufferSize = 16; // 4 floats aligned
+  const uniformBufferSize = 32; // 4 floats aligned
 
   const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
@@ -229,6 +284,22 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
 
   device.queue.writeBuffer(particleBuffer, 0, particleData);
+
+  const historyTexture = device.createTexture({
+    size: [canvas.width, canvas.height],
+    format,
+    usage:
+      GPUTextureUsage.RENDER_ATTACHMENT |
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_SRC,
+  });
+
+  const sampler = device.createSampler({
+    magFilter: "linear",
+    minFilter: "linear",
+  });
+
+
 
   const computeModule = device.createShaderModule({
     code: computeCode,
@@ -329,6 +400,26 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     },
   });
 
+  const presentModule = device.createShaderModule({
+    code: historySamplerShader
+  })
+
+  const presentPipeline = device.createRenderPipeline({
+    layout: "auto",
+    vertex: {
+      module: presentModule,
+      entryPoint: "vs_main",
+    },
+    fragment: {
+      module: presentModule,
+      entryPoint: "fs_main",
+      targets: [{ format }],
+    },
+    primitive: {
+      topology: "triangle-list",
+    },
+  });
+
   const renderBindGroup = device.createBindGroup({
     layout: renderPipeline.getBindGroupLayout(0),
     entries: [
@@ -340,6 +431,19 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
   });
 
 
+  const presentBindGroup = device.createBindGroup({
+    layout: presentPipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: historyTexture.createView(),
+      },
+      {
+        binding: 1,
+        resource: sampler,
+      },
+    ],
+  });
 
   let animationId: number;
   let lastTime = performance.now();
@@ -355,7 +459,18 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     device.queue.writeBuffer(
       uniformBuffer,
       0,
-      new Float32Array([time, dt, PARTICLE_COUNT, 0])
+      new Float32Array([
+        time,            // f32
+        dt,              // f32
+        PARTICLE_COUNT,  // u32 (fine as float)
+        0,               // pad
+
+        mouse.x,         // vec2
+        mouse.y,
+        0,               // pad2.x
+        0                // pad2.y
+      ])
+
     );
 
     // --- COMPUTE ---
@@ -370,11 +485,11 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
     computePass.end();
 
-    const currentTexture = context.getCurrentTexture();
 
+    // render particle trails and fade into historyTexture
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [{
-        view: currentTexture.createView(),
+        view: historyTexture.createView(),
         loadOp: "load",
         storeOp: "store",
       }],
@@ -390,6 +505,19 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     renderPass.draw(6, PARTICLE_COUNT);
     renderPass.end();
 
+    // sample history texture into fullscreen triangle
+    const presentPass = encoder.beginRenderPass({
+      colorAttachments: [{
+        view: context.getCurrentTexture().createView(),
+        loadOp: "clear",
+        clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        storeOp: "store",
+      }],
+    });
+    presentPass.setPipeline(presentPipeline);
+    presentPass.setBindGroup(0, presentBindGroup);
+    presentPass.draw(3);
+    presentPass.end();
 
     device.queue.submit([encoder.finish()]);
 
