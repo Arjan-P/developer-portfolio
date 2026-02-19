@@ -1,59 +1,30 @@
-const fadeShader = `
+const fullscreenTriangleShader = `
+struct Params {
+  time  : f32,
+  dt    : f32,
+  mouse : vec2<f32>,   // total = 16 bytes
+};
+
+@group(0) @binding(0)
+var<uniform> params : Params;
+
 struct VSOut {
-  @builtin(position) position: vec4<f32>,
+  @builtin(position) position : vec4<f32>,
+  @location(0) uv : vec2<f32>,
 };
 
 @vertex
-fn vs_main(@builtin(vertex_index) index: u32) -> VSOut {
-    var pos = array<vec2<f32>, 3>(
-        vec2<f32>(-1.0, -1.0),
-        vec2<f32>( 3.0, -1.0),
-        vec2<f32>(-1.0,  3.0)
-    );
+fn vs_main(@builtin(vertex_index) vertexIndex : u32) -> VSOut {
+  var pos = array<vec2<f32>, 3>(
+    vec2<f32>(-1.0, -1.0),
+    vec2<f32>( 3.0, -1.0),
+    vec2<f32>(-1.0,  3.0)
+  );
 
-    var out: VSOut;
-    out.position = vec4<f32>(pos[index], 0.0, 1.0);
-    return out;
-}
-
-@fragment
-fn fs_main() -> @location(0) vec4<f32> {
-  // Very small alpha = slow fade
-  return vec4<f32>(0.0, 0.0, 0.0, 0.03);
-}
-
-`
-const computeCode =
-  `
-  struct Params {
-    time: f32,        // 4
-    dt: f32,          // 4
-    count: u32,       // 4
-    _pad: u32,        // 4   → 16 bytes
-
-    mouse: vec2<f32>, // 8
-    _pad2: vec2<f32>, // 8   → 16 bytes
-};
-
-
-@group(0) @binding(0)
-var<storage, read_write> particles: array<vec2<f32>>;
-
-@group(0) @binding(1)
-var<uniform> params: Params;
-
-fn hash(n: u32) -> f32 {
-    var x = (n << 13u) ^ n;
-    let res = 1.0 - f32((x * (x * x * 15731u + 789221u) + 1376312589u)
-        & 0x7fffffffu) / 1073741824.0;
-    return res;
-}
-
-fn random2(id: u32, time: f32) -> vec2<f32> {
-    let t = u32(time * 4096.0);
-    let x = hash(id ^ t);
-    let y = hash((id + 17u) ^ (t * 31u));
-    return vec2<f32>(x, y);
+  var output : VSOut;
+  output.position = vec4<f32>(pos[vertexIndex], 0.0, 1.0);
+  output.uv = pos[vertexIndex] * 0.5 + 0.5;
+  return output;
 }
 
 fn randomGradient(p: vec2<f32>) -> vec2<f32> {
@@ -70,16 +41,23 @@ fn fade(t: vec2<f32>) -> vec2<f32> {
     return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 }
 
+fn rotate(v: vec2<f32>, a: f32) -> vec2<f32> {
+  let s = sin(a);
+  let c = cos(a);
+  return vec2<f32>(c * v.x - s * v.y, s * v.x + c * v.y);
+}
+
 fn perlin(p: vec2<f32>) -> f32 {
     // Grid cell coordinates
     let i = floor(p);
     let f = fract(p);
+    let angle = params.time * 0.4;
 
     // Gradient vectors at the 4 corners
-    let g00 = randomGradient(i + vec2<f32>(0.0, 0.0));
-    let g10 = randomGradient(i + vec2<f32>(1.0, 0.0));
-    let g01 = randomGradient(i + vec2<f32>(0.0, 1.0));
-    let g11 = randomGradient(i + vec2<f32>(1.0, 1.0));
+    let g00 = rotate(randomGradient(i + vec2<f32>(0.0, 0.0)), angle);
+    let g10 = rotate(randomGradient(i + vec2<f32>(1.0, 0.0)), angle);
+    let g01 = rotate(randomGradient(i + vec2<f32>(0.0, 1.0)), angle);
+    let g11 = rotate(randomGradient(i + vec2<f32>(1.0, 1.0)), angle);
 
     // Distance vectors from each corner
     let d00 = f - vec2<f32>(0.0, 0.0);
@@ -104,116 +82,39 @@ fn perlin(p: vec2<f32>) -> f32 {
     return nxy;
 }
 
-@compute @workgroup_size(256)
-fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
-    let id = gid.x;
-
-    if (id >= params.count) {
-        return;
-    }
-
-    var p = particles[id];
-
-    let scale = 3.0;
-    let offset = vec2<f32>(params.time * 0.2, params.time * 0.173);
-    let sp = p * scale  + offset;
-    let n = perlin(sp);
-    let angle = n * 6.283185;
-
-    var dir = vec2<f32>(cos(angle), sin(angle));
-    p += dir * params.dt * 0.09;
-    
-    if (p.x > 1.0 || p.x < -1.0 || p.y > 1.0 || p.y < -1.0) {
-        p = random2(id, params.time);
-    }
-
-    particles[id] = p;
-}
-`
-const shaderCode = `
-@group(0) @binding(0)
-var<storage, read> particles : array<vec2<f32>>;
-
-struct VSOut {
-    @builtin(position) pos : vec4<f32>,
-    @location(0) uv: vec2<f32>,
-};
-
-@vertex
-fn vs_main(@builtin(vertex_index) cornerIndex : u32, @builtin(instance_index) particleIndex : u32) -> VSOut {
-    let center = particles[particleIndex];
-    var offset = vec2<f32>(0.0);
-    
-    switch(cornerIndex) {
-      case 0u: { offset = vec2<f32>(-1.0, -1.0); }
-      case 1u: { offset = vec2<f32>( 1.0, -1.0); }
-      case 2u: { offset = vec2<f32>(-1.0,  1.0); }
-
-      case 3u: { offset = vec2<f32>(-1.0,  1.0); }
-      case 4u: { offset = vec2<f32>( 1.0, -1.0); }
-      case 5u: { offset = vec2<f32>( 1.0,  1.0); }
-
-      default: {}
-    }
-    let size = 0.002;
-    
-
-    var out: VSOut;
-    out.pos = vec4<f32>(center + offset * size, 0.0, 1.0);
-    out.uv = offset * 0.5 + vec2<f32>(0.5);
-
-    return out;
-}
-
-
 @fragment
-fn fs_main(in: VSOut) -> @location(0) vec4<f32> {
+fn fs_main(@location(0) uv : vec2<f32>) -> @location(0) vec4<f32> {
+  let scale = 8.0;
+  let mouseUV = params.mouse * 0.5 + 0.5;
+  let diff = uv - mouseUV;
+  let dist = length(diff);
 
-  // Make circular particle
-  let dist = distance(in.uv, vec2<f32>(0.5));
-  if (dist > 0.5) {
-    discard;
-  }
+  // radius of influence
+  let radius = 0.15;
 
-  // let t = 0.5 + 0.5 * sin(param.time);
-  // let colorA = vec3<f32>(0.75, 0.38, 1.0);
-  // let colorB = vec3<f32>(0.0, 0.0, 0.0);
-  // let color = mix(colorB, colorA, t);
-  return vec4<f32>(1.0, 1.0, 1.0, 1.0);
+  // smooth radial mask
+  let falloff = pow(1.0 - smoothstep(0.0, radius, dist), 2.0);
+
+  let noiseWarp = vec2<f32>(
+    perlin(uv * 4.0 + params.time * 0.4),
+    perlin(uv * 4.0 + 100.0 + params.time * 0.4)
+  );
+
+  let warpedUV = uv + noiseWarp * falloff * 0.1;
+
+  var n = 1.0 - abs(perlin(warpedUV * scale));
+
+  n = n * 0.5 + 0.5;
+  let background = vec3<f32>(233, 228, 216) / 255.0;
+  let foreground = vec3<f32>(30,30,30) / 255.0;
+  let shaped = pow(n, 1.4);
+  let color = mix(foreground, background, shaped);
+
+
+  //let color = mix(light, dark, n);
+
+  return vec4<f32>(color, 1.0);
 }
-`;
-
-const historySamplerShader = `
-@group(0) @binding(0)
-var historyTex: texture_2d<f32>;
-
-@group(0) @binding(1)
-var historySampler: sampler;
-
-struct VSOut {
-    @builtin(position) pos: vec4<f32>,
-    @location(0) uv: vec2<f32>,
-};
-
-@vertex
-fn vs_main(@builtin(vertex_index) i: u32) -> VSOut {
-    var pos = array<vec2<f32>, 3>(
-        vec2(-1.0, -1.0),
-        vec2( 3.0, -1.0),
-        vec2(-1.0,  3.0)
-    );
-
-    var out: VSOut;
-    out.pos = vec4(pos[i], 0.0, 1.0);
-    out.uv = (pos[i] + 1.0) * 0.5;
-    return out;
-}
-
-@fragment
-fn fs_main(in: VSOut) -> @location(0) vec4<f32> {
-    return textureSample(historyTex, historySampler, in.uv);
-}
-
 `
 
 export async function initWebGPU(canvas: HTMLCanvasElement) {
@@ -241,6 +142,7 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     x: 0,
     y: 0
   }
+  let mouseLag = { x: 0, y: 0 };
 
   canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -255,192 +157,45 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     console.log(ndcX, ndcY);
   });
 
-  const PARTICLE_COUNT = 50_000;
-
-  const particleData = new Float32Array(PARTICLE_COUNT * 2);
-
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const base = i * 2;
-    // Random positions in clip space (-1 to 1)
-    particleData[base + 0] = Math.random() * 2 - 1; // x
-    particleData[base + 1] = Math.random() * 2 - 1; // y
-  }
-
-  const particleBuffer = device.createBuffer({  // equivalent to SSBO
-    size: particleData.byteLength,
-    usage:
-      GPUBufferUsage.STORAGE |
-      GPUBufferUsage.VERTEX |
-      GPUBufferUsage.COPY_DST,
-  });
-
-  // buffer for uniforms
-  const uniformBufferSize = 32; // 4 floats aligned
+  const uniformBufferSize = 16; // 16 bytes
 
   const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-
-  device.queue.writeBuffer(particleBuffer, 0, particleData);
-
-  const historyTexture = device.createTexture({
-    size: [canvas.width, canvas.height],
-    format,
-    usage:
-      GPUTextureUsage.RENDER_ATTACHMENT |
-      GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.COPY_SRC,
+  const shaderModule = device.createShaderModule({
+    code: fullscreenTriangleShader,
   });
 
-  const sampler = device.createSampler({
-    magFilter: "linear",
-    minFilter: "linear",
-  });
-
-
-
-  const computeModule = device.createShaderModule({
-    code: computeCode,
-  });
-
-  const computePipeline = device.createComputePipeline({
-    layout: "auto",
-    compute: {
-      module: computeModule,
-      entryPoint: "main",
-    },
-  });
-
-  const fadeModule = device.createShaderModule({
-    code: fadeShader
-  });
-
-  const fadePipeline = device.createRenderPipeline({
+  const pipeline = device.createRenderPipeline({
     layout: "auto",
     vertex: {
-      module: fadeModule,
+      module: shaderModule,
       entryPoint: "vs_main",
     },
-
     fragment: {
-      module: fadeModule,
+      module: shaderModule,
       entryPoint: "fs_main",
-      targets: [{
-        format,
-        blend: {
-          color: {
-            srcFactor: "src-alpha",
-            dstFactor: "one-minus-src-alpha",
-            operation: "add",
-          },
-          alpha: {
-            srcFactor: "one",
-            dstFactor: "one-minus-src-alpha",
-            operation: "add",
-          },
-        }
-      }],
+      targets: [
+        {
+          format,
+        },
+      ],
     },
     primitive: {
       topology: "triangle-list",
     },
-  });
-
-
-
-  const shaderModule = device.createShaderModule({
-    code: shaderCode,
   });
 
   const bindGroup = device.createBindGroup({
-    layout: computePipeline.getBindGroupLayout(0),
+    layout: pipeline.getBindGroupLayout(0),
     entries: [
       {
         binding: 0,
-        resource: { buffer: particleBuffer },
-      },
-      {
-        binding: 1,
-        resource: { buffer: uniformBuffer },
-      },
-    ],
-  });
-
-
-  const renderPipeline = device.createRenderPipeline({
-    layout: "auto",
-    vertex: {
-      module: shaderModule,
-      entryPoint: "vs_main",
-    },
-    fragment: {
-      module: shaderModule,
-      entryPoint: "fs_main",
-      targets: [{
-        format,
-        blend: {
-          color: {
-            srcFactor: "one",
-            dstFactor: "one",
-            operation: "add",
-          },
-          alpha: {
-            srcFactor: "one",
-            dstFactor: "one",
-            operation: "add",
-          },
+        resource: {
+          buffer: uniformBuffer,
         },
-      }],
-
-    },
-    primitive: {
-      topology: "triangle-list",  // = GL_POINTS
-    },
-  });
-
-  const presentModule = device.createShaderModule({
-    code: historySamplerShader
-  })
-
-  const presentPipeline = device.createRenderPipeline({
-    layout: "auto",
-    vertex: {
-      module: presentModule,
-      entryPoint: "vs_main",
-    },
-    fragment: {
-      module: presentModule,
-      entryPoint: "fs_main",
-      targets: [{ format }],
-    },
-    primitive: {
-      topology: "triangle-list",
-    },
-  });
-
-  const renderBindGroup = device.createBindGroup({
-    layout: renderPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: { buffer: particleBuffer },
-      },
-    ],
-  });
-
-
-  const presentBindGroup = device.createBindGroup({
-    layout: presentPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: historyTexture.createView(),
-      },
-      {
-        binding: 1,
-        resource: sampler,
       },
     ],
   });
@@ -456,68 +211,42 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     const dt = Math.min(dtRaw, 0.016);
     lastTime = now;
     const time = now / 1000;
+    const smoothing = 8.0; // higher = faster catchup
+
+    mouseLag.x += (mouse.x - mouseLag.x) * Math.min(1, dt * smoothing);
+    mouseLag.y += (mouse.y - mouseLag.y) * Math.min(1, dt * smoothing);
+
+    const uniformData = new Float32Array([
+      time,
+      dt,
+      mouseLag.x,
+      mouseLag.y
+    ]);
+
     device.queue.writeBuffer(
       uniformBuffer,
       0,
-      new Float32Array([
-        time,            // f32
-        dt,              // f32
-        PARTICLE_COUNT,  // u32 (fine as float)
-        0,               // pad
-
-        mouse.x,         // vec2
-        mouse.y,
-        0,               // pad2.x
-        0                // pad2.y
-      ])
-
+      uniformData.buffer
     );
 
-    // --- COMPUTE ---
+    const textureView = context.getCurrentTexture().createView();
 
-    const computePass = encoder.beginComputePass();
-    computePass.setPipeline(computePipeline);
-    computePass.setBindGroup(0, bindGroup);
-
-    computePass.dispatchWorkgroups(
-      Math.ceil(PARTICLE_COUNT / 256)
-    );
-
-    computePass.end();
-
-
-    // render particle trails and fade into historyTexture
     const renderPass = encoder.beginRenderPass({
-      colorAttachments: [{
-        view: historyTexture.createView(),
-        loadOp: "load",
-        storeOp: "store",
-      }],
+      colorAttachments: [
+        {
+          view: textureView,
+          loadOp: "clear",
+          storeOp: "store",
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        },
+      ],
     });
 
-    // --- FADE ---
-    renderPass.setPipeline(fadePipeline);
+    renderPass.setPipeline(pipeline);
+    renderPass.setBindGroup(0, bindGroup);
     renderPass.draw(3);
 
-    // --- DRAW ---
-    renderPass.setPipeline(renderPipeline);
-    renderPass.setBindGroup(0, renderBindGroup);
-    renderPass.draw(6, PARTICLE_COUNT);
     renderPass.end();
-
-    // sample history texture into fullscreen triangle
-    const presentPass = encoder.beginRenderPass({
-      colorAttachments: [{
-        view: context.getCurrentTexture().createView(),
-        loadOp: "clear",
-        clearValue: { r: 0, g: 0, b: 0, a: 1 },
-        storeOp: "store",
-      }],
-    });
-    presentPass.setPipeline(presentPipeline);
-    presentPass.setBindGroup(0, presentBindGroup);
-    presentPass.draw(3);
-    presentPass.end();
 
     device.queue.submit([encoder.finish()]);
 
