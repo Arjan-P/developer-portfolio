@@ -1,11 +1,23 @@
 import { useParams, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Post } from "./BlogPage";
+import { useEffect, useState } from "react";
+import { Markdown } from "@/components/Markdown";
 
 export function PostPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   
+  const [post, setPost] = useState<Post | null>(null);
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL_DEV}/posts/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      setPost(data)
+    });
+  }, []);
+
   return (
     <motion.div
       layoutId={`post-${id}`}
@@ -15,32 +27,27 @@ export function PostPage() {
     >
       <Card onClick={() => navigate(`/blog/${id}`)} className="w-full h-full glass no-hover">
         <CardHeader>
-          <CardTitle>Card Title</CardTitle>
-          <CardDescription>Card Description</CardDescription>
-          <CardAction>Card Action</CardAction>
+          <CardTitle>
+            {
+              post ? post.title : ""
+            }
+          </CardTitle>
+          <CardDescription>
+          {
+            post
+            ? new Date(post.createdAt).toLocaleDateString()
+            : ""
+          }
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Card Content</p>
+          <p>
+            {
+              post ? <Markdown content={post.content} />: ""
+            }
+          </p>
         </CardContent>
-        <CardFooter>
-          <p>Card Footer</p>
-        </CardFooter>
       </Card>
     </motion.div>
   )
-  // return (
-  //   <section className="content-page">
-  //     <motion.div
-  //       className="glass no-hover w-full max-w-4xl mx-auto"
-  //       layout
-  //       layoutId={`post-${id}`}
-  //       transition={{
-  //         layout: { duration: 2.5, type: "spring" }
-  //       }}
-  //     >
-  //       <h1>Post {id}</h1>
-  //       <p>Full post content here...</p>
-  //     </motion.div>
-  //   </section>
-  // );
 }
