@@ -16,7 +16,7 @@ export function PublicLayout() {
   return (
     <LayoutGroup>
       <div className="layout">
-        {/*<WebGPUBackground />*/}
+        <WebGPUBackground />
         <motion.header className="navbar-wrapper">
           <motion.div
             className="glass no-hover w-full p-3"

@@ -21,11 +21,11 @@ export function PostPage() {
   return (
     <motion.div
       layoutId={`post-${id}`}
-      className="cursor-pointer content-page"
+      className="content-page"
       onClick={() => navigate(`/blog/${id}`)}
       transition={{ type: "spring", stiffness: 400, damping: 35 }}
     >
-      <Card onClick={() => navigate(`/blog/${id}`)} className="w-full h-full glass no-hover">
+      <Card className="flex flex-col gap-3 w-full h-full glass no-hover">
         <CardHeader>
           <CardTitle>
             {
