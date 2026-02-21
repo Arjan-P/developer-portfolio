@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import service from "../utils/db.js";
+import type { Post } from "@prisma/client";
 import { ENV } from "../config.js";
+import { exit } from "process";
 
 // Configure your S3
 const BUCKET_NAME = ENV.S3_BUCKET_NAME;
@@ -74,7 +77,13 @@ if (args.length === 0) {
   process.exit(1);
 }
 
-const markdownFile = args[0];
+const title = args[0];
+const markdownFile = args[1];
+if(!title || !markdownFile) exit();
 console.log("Markdown file path:", markdownFile);
-if(markdownFile) processMarkdown(markdownFile).catch(console.error);
-
+processMarkdown(markdownFile).catch(console.error);
+const content = fs.readFileSync(markdownFile.replace(/\.md$/, "-s3.md"), "utf-8");
+await service.postPost({
+  title,
+  content
+})
