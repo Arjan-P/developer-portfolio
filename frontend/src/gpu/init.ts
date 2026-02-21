@@ -144,7 +144,7 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
   }
   let mouseLag = { x: 0, y: 0 };
 
-  canvas.addEventListener("mousemove", (e) => {
+  const mousemoveHandler = (e: MouseEvent) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -155,7 +155,8 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     mouse.x = ndcX;
     mouse.y = ndcY;
     console.log(ndcX, ndcY);
-  });
+  }
+  window.addEventListener("mousemove", mousemoveHandler);
 
   const uniformBufferSize = 16; // 16 bytes
 
@@ -202,7 +203,6 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
   let animationId: number;
   let lastTime = performance.now();
-  //let firstFrame = true;
 
   function frame() {
     const encoder = device.createCommandEncoder();
@@ -257,5 +257,6 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
   return () => {
     cancelAnimationFrame(animationId);
+    window.removeEventListener("mousemove", mousemoveHandler)
   };
 }

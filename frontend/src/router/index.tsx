@@ -1,9 +1,8 @@
-import { AdminLayout } from "@/Layouts/AdminLayout";
+import { PageTransition } from "@/components/PageTransition";
 import { PublicLayout } from "@/Layouts/PublicLayout";
-import { AdminPage } from "@/pages/AdminPage";
 import { BlogPage } from "@/pages/BlogPage";
 import { HomePage } from "@/pages/HomePage";
-import { LoginPage } from "@/pages/LoginPage";
+import { PostPage } from "@/pages/PostPage";
 import { createBrowserRouter } from "react-router-dom";
 
 export const router = createBrowserRouter([
@@ -11,21 +10,30 @@ export const router = createBrowserRouter([
     path: "/",
     element: <PublicLayout />,
     children: [
-      {path: "home", element: <HomePage />},
-      {path: "blog", element: <BlogPage />}
+      {
+        index: true,
+        element: (
+          <PageTransition>
+            <HomePage />
+          </PageTransition>
+        )
+      },
+      {
+        path: "blog",
+        element: (
+          <PageTransition>
+            <BlogPage />
+          </PageTransition>
+        )
+      },
+      {
+        path: "blog/:id",
+        element: (
+          <PageTransition>
+            <PostPage />
+          </PageTransition>
+        )
+      }
     ]
-  },
-  {
-    path: "/login",
-    element: <LoginPage />
-  },
-  {
-    path: "/admin",
-    element:
-    // <ProtectedRoute>
-      <AdminLayout>
-        <AdminPage />
-      </AdminLayout>
-    // </ProtectedRoute>
   }
-])
+]);

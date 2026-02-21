@@ -1,5 +1,7 @@
 export function HomePage() {
   return (
-    <h1>Home</h1>
+    <section className="content-page">
+      <h1>Home</h1>
+    </section>
   )
 }
