@@ -11,27 +11,21 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       {
-        index: true,
+        index:true,
         element: (
-          <PageTransition>
-            <HomePage />
-          </PageTransition>
+          <HomePage />
         )
       },
       {
         path: "blog",
         element: (
-          <PageTransition>
-            <BlogPage />
-          </PageTransition>
+          <BlogPage />
         )
       },
       {
         path: "blog/:id",
         element: (
-          <PageTransition>
-            <PostPage />
-          </PageTransition>
+          <PostPage />
         )
       }
     ]

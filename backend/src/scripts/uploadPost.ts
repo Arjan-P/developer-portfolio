@@ -27,7 +27,7 @@ async function uploadFileToS3(filePath: string): Promise<string> {
     Bucket: BUCKET_NAME,
     Key: s3Key,
     Body: fileContent,
-    ContentType: "image/" + path.extname(fileName).substring(1),
+    ContentType: "posts/" + path.extname(fileName).substring(1),
   });
 
   await s3.send(command);

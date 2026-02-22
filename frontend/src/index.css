@@ -229,6 +229,7 @@
 }
 
 .markdown-content img {
+  padding: 4rem;
   max-width: 50%;
   float: inherit;
 }
