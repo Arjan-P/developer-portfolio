@@ -34,9 +34,9 @@ export function PublicLayout() {
           <motion.div
             className="container main-content"
             key={location.pathname}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
             style={{ height: "100%" }}
           >
             <Outlet />

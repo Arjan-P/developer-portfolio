@@ -1,13 +1,11 @@
-import { useParams, useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Post } from "./BlogPage";
+import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Markdown } from "@/components/Markdown";
+import type { Post } from "@/types/posts";
 
 export function PostPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   
   const [post, setPost] = useState<Post | null>(null);
   useEffect(() => {
@@ -19,13 +17,7 @@ export function PostPage() {
   }, []);
 
   return (
-    <motion.div
-      layoutId={`post-${id}`}
-      className="content-page"
-      onClick={() => navigate(`/blog/${id}`)}
-      transition={{ type: "spring", stiffness: 400, damping: 35 }}
-    >
-      <Card className="flex flex-col gap-3 w-full h-full glass no-hover">
+      <Card className="glass no-hover">
         <CardHeader>
           <CardTitle>
             {
@@ -48,6 +40,5 @@ export function PostPage() {
           </p>
         </CardContent>
       </Card>
-    </motion.div>
   )
 }

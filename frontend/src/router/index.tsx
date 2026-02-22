@@ -1,4 +1,3 @@
-import { PageTransition } from "@/components/PageTransition";
 import { PublicLayout } from "@/Layouts/PublicLayout";
 import { BlogPage } from "@/pages/BlogPage";
 import { HomePage } from "@/pages/HomePage";
