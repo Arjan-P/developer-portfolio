@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import type { Post } from "@/types/posts";
-import { Markdown } from "./Markdown";
 import { useNavigate } from "react-router-dom";
+import { Markdown } from "./Markdown";
+import type { Post } from "@/types/posts";
 
 export function PostCard({ post }: { post: Post }) {
   const navigate = useNavigate();
