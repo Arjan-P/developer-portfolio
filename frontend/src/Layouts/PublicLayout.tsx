@@ -1,11 +1,11 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, LayoutGroup, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { LayoutGroup, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Navbar } from "@/components/Navbar";
 import WebGPUBackground from "@/components/WebGPUBackground";
-import { useState } from "react";
+import { PageTransition } from "@/components/PageTransition";
 
 export function PublicLayout() {
-  const location = useLocation();
   const { scrollY } = useScroll();
   const [shrunk, setShrunk] = useState<boolean>(false);
 
@@ -30,18 +30,9 @@ export function PublicLayout() {
           </motion.div>
         </motion.header>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            className="container main-content"
-            key={location.pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            style={{ height: "100%" }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
 
         <footer className="footer">
           © 2026
