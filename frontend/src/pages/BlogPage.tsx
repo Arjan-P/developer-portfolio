@@ -34,9 +34,14 @@ export function BlogPage() {
         viewport={{ once: false }}
         className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8"
       >
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
-        ))}
+        {[...posts]
+          .sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .map(post => (
+            <PostCard key={post.id} post={post} />
+          ))
+        }
       </motion.div>
     </section>
   )
