@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { LayoutGroup, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Navbar } from "@/components/Navbar";
-// import WebGPUBackground from "@/components/WebGPUBackground";
+import WebGPUBackground from "@/components/WebGPUBackground";
 import { PageTransition } from "@/components/PageTransition";
 
 export function PublicLayout() {
@@ -17,7 +17,7 @@ export function PublicLayout() {
   return (
     <LayoutGroup>
       <div className="layout">
-        {/*<WebGPUBackground />*/}
+        <WebGPUBackground />
         <motion.header className="navbar-wrapper">
           <motion.div
             className="glass no-hover w-full p-3"
