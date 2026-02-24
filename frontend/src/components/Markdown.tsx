@@ -9,7 +9,7 @@ interface MarkdownProps {
 
 export function Markdown({ content }: MarkdownProps) {
   return (
-    <div className="markdown-content">
+    <div className="markdown-content prose max-w-6xl mx-auto px-4">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}
