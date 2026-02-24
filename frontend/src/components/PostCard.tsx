@@ -26,7 +26,7 @@ export function PostCard({ post }: { post: Post }) {
         <CardDescription>{new Date(post.createdAt).toLocaleDateString()}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Markdown content={post.content.substring(0, 50) + "..."} />
+        <Markdown content={post.content.split("\n")[0].substring(0, 50) + "..."} />
       </CardContent>
     </Card>
   </motion.div>

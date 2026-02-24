@@ -2,9 +2,7 @@ import fs from "fs";
 import path from "path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import service from "../utils/db.js";
-import type { Post } from "@prisma/client";
 import { ENV } from "../config.js";
-import { exit } from "process";
 
 // Configure your S3
 const BUCKET_NAME = ENV.S3_BUCKET_NAME;
@@ -38,6 +36,7 @@ async function uploadFileToS3(filePath: string): Promise<string> {
 
 // Function to process markdown file
 async function processMarkdown(filePath: string) {
+  console.log("Processing markdown");
   let markdown = fs.readFileSync(filePath, "utf-8");
 
   // Regex to match images: ![alt](path)
@@ -49,7 +48,7 @@ async function processMarkdown(filePath: string) {
     const localImagePath = match[1];
 
     // Skip URLs (already online)
-    if(!localImagePath) continue;
+    if (!localImagePath) continue;
     if (/^https?:\/\//.test(localImagePath)) continue;
 
     const absolutePath = path.resolve(path.dirname(filePath), localImagePath);
@@ -71,19 +70,28 @@ async function processMarkdown(filePath: string) {
   console.log(`Updated markdown saved to ${outputPath}`);
 }
 
-const args = process.argv.slice(2); // skip first 2
-if (args.length === 0) {
-  console.error("Usage: ts-node script.ts <markdown-file-path>");
-  process.exit(1);
+async function main() {
+  const args = process.argv.slice(2); // skip first 2
+  if (args.length === 0) {
+    console.error("Usage: ts-node script.ts <markdown-file-path>");
+    process.exit(1);
+  }
+
+  const title = args[0];
+  const markdownFile = args[1];
+  console.log(`Title: ${title}`);
+  console.log(`File: ${markdownFile}`);
+  if (!title || !markdownFile) return;
+  await processMarkdown(markdownFile).catch(console.error);
+  const content = fs.readFileSync(markdownFile.replace(/\.md$/, "-s3.md"), "utf-8");
+  await service.postPost({
+    title,
+    content
+  })
+  console.log("Post uploaded");
 }
 
-const title = args[0];
-const markdownFile = args[1];
-if(!title || !markdownFile) exit();
-console.log("Markdown file path:", markdownFile);
-processMarkdown(markdownFile).catch(console.error);
-const content = fs.readFileSync(markdownFile.replace(/\.md$/, "-s3.md"), "utf-8");
-await service.postPost({
-  title,
-  content
-})
+main().catch(err => {
+  console.error("Error:", err);
+  process.exit(1);
+});

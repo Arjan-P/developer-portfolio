@@ -102,7 +102,7 @@ fn fs_main(@location(0) uv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let warpedUV = uv + noiseWarp * falloff * 0.1;
 
-  var n = 1.0 - abs(perlin(warpedUV * scale));
+  var n = 0.7 - abs(perlin(warpedUV * scale));
 
   n = n * 0.5 + 0.5;
   let background = vec3<f32>(233, 228, 216) / 255.0;

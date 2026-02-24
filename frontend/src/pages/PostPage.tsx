@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Markdown } from "@/components/Markdown";
 import type { Post } from "@/types/posts";
+import { Separator } from "@/components/ui/separator";
 
 export function PostPage() {
   const { id } = useParams();
@@ -32,6 +33,7 @@ export function PostPage() {
           }
           </CardDescription>
         </CardHeader>
+      <Separator />
         <CardContent>
             {
               post ? <Markdown content={post.content} />: ""
