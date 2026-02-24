@@ -274,6 +274,10 @@
   border-radius: 12px;
 }
 
+.markdown-content pre {
+  overflow-x: auto;
+}
+
 html {
   background: var(--background);
   color: var(--foreground);
