@@ -33,11 +33,9 @@ export function PostPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p>
             {
               post ? <Markdown content={post.content} />: ""
             }
-          </p>
         </CardContent>
       </Card>
   )

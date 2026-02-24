@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks"; 
 import rehypeSanitize from "rehype-sanitize";
 
 interface MarkdownProps {
@@ -10,7 +11,7 @@ export function Markdown({ content }: MarkdownProps) {
   return (
     <div className="markdown-content">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}
       >
         {content}

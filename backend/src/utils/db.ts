@@ -9,6 +9,7 @@ interface PostService {
 }
 
 async function postPost(post: {title: string; content: string}): Promise<void> {
+  console.log(post.content);
   await prisma.post.create({
     data: post
   })
