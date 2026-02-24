@@ -43,7 +43,7 @@ export function PostPage() {
         </CardContent>
       <Separator />
       <Button onClick={() => navigate("/blog")}
-        className="mx-auto w-xl">Back</Button>
+        className="mx-auto max-w-3sm">Back</Button>
       </Card>
   )
 }
