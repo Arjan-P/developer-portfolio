@@ -1,11 +1,20 @@
-import type { Post } from "@prisma/client";
+import type { Post, Projects } from "@prisma/client";
 import prisma from "../prisma.js";
 
 interface PostService {
-  postPost: typeof postPost;
   getPost: typeof getPost;
   getPosts: typeof getPosts;
+  postPost: typeof postPost;
   deletePost: typeof deletePost;
+}
+
+interface ProjectsService {
+  getProjects: typeof getProjects;
+}
+
+async function getProjects(): Promise<Projects[]> {
+  const projects = await prisma.projects.findMany();
+  return projects
 }
 
 async function postPost(post: {title: string; content: string}): Promise<void> {
@@ -37,9 +46,13 @@ async function deletePost(id: Post["id"]): Promise<void> {
   });
 }
 
-export default {
-  postPost,
+export const projectService: ProjectsService = {
+  getProjects
+}
+
+export const postService: PostService = {
   getPost,
   getPosts,
+  postPost,
   deletePost
-} as PostService;
+};

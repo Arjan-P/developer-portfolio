@@ -13,3 +13,9 @@ model Post {
   content   String
   createdAt DateTime @default(now())
 }
+
+model Projects {
+  id Int @id @default(autoincrement())
+  repo String
+  img_url String 
+}

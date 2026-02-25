@@ -20,7 +20,7 @@ export function PostCard({ post }: { post: Post }) {
   const navigate = useNavigate();
   return (
     <motion.div variants={cardVariants} transition={{ duration: 0.5 }}>
-    <Card onClick={() => navigate(`/blog/${post.id}`)} className="glass cursor-pointer">
+    <Card onClick={() => navigate(`/blog/${post.id}`)} className="glass cursor-pointer h-full flex flex-col">
       <CardHeader>
         <CardTitle>{post.title}</CardTitle>
         <CardDescription>{new Date(post.createdAt).toLocaleDateString()}</CardDescription>

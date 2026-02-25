@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import service from "../utils/db.js";
+import {postService} from "../utils/db.js";
 import { ENV } from "../config.js";
 
 // Configure your S3
@@ -84,7 +84,7 @@ async function main() {
   if (!title || !markdownFile) return;
   await processMarkdown(markdownFile).catch(console.error);
   const content = fs.readFileSync(markdownFile.replace(/\.md$/, "-s3.md"), "utf-8");
-  await service.postPost({
+  await postService.postPost({
     title,
     content
   })
