@@ -35,7 +35,7 @@ export function HomePage() {
         initial="hidden"
         whileInView="show"
         viewport={{ once: false }}
-        className="grid grid-cols-4 sm:grid-cols-8 gap-6 sm:gap-8"
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 sm:gap-8"
       >
         {projects.map(project => (
           <ProjectCard key={project.id} project={project} />
