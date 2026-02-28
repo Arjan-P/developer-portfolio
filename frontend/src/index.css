@@ -278,6 +278,21 @@
   overflow-x: auto;
 }
 
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.markdown-content li::marker {
+  color: #888;
+}
+
 html {
   background: var(--background);
   color: var(--foreground);
