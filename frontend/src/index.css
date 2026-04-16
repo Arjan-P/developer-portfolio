@@ -274,8 +274,17 @@
   border-radius: 12px;
 }
 
+.markdown-content a {
+  text-decoration: underline;   
+}
+
+.markdown-content p {
+  color: var(--foreground);
+}
+
 .markdown-content pre {
   overflow-x: auto;
+  color: var(--muted-foreground);
 }
 
 .markdown-content ul {
