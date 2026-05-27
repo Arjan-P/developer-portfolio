@@ -6,7 +6,8 @@
     "build": "tsc",
     "start": "node ./dist/index.js",
     "pPost": "node ./dist/scripts/uploadPost.js",
-    "dPost": "node ./dist/scripts/deletePost.js"
+    "dPost": "node ./dist/scripts/deletePost.js",
+    "uPost": "node ./dist/scripts/updatePost.js"
   },
   "type": "module",
   "keywords": [],

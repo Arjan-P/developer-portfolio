@@ -35,7 +35,7 @@ async function uploadFileToS3(filePath: string): Promise<string> {
 }
 
 // Function to process markdown file
-async function processMarkdown(filePath: string) {
+export async function processMarkdown(filePath: string) {
   console.log("Processing markdown");
   let markdown = fs.readFileSync(filePath, "utf-8");
 
@@ -91,7 +91,9 @@ async function main() {
   console.log("Post uploaded");
 }
 
-main().catch(err => {
-  console.error("Error:", err);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(err => {
+    console.error("Error:", err);
+    process.exit(1);
+  });
+}
