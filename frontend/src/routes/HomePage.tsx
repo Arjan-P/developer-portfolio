@@ -2,13 +2,16 @@ import { MotionGrid } from "@/components/MotionGrid";
 
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { ProjectCard } from "@/features/projects/components/ProjectCard";
+import { useEffect } from "react";
 
 export function HomePage() {
   const { data: projects, isLoading, isError } = useProjects();
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Failed to load projects.</p>;
-
+  useEffect(() => {
+    document.title = "Home | Arjan";
+  }, []);
   return (
     <section className="content-page">
       <h1>About</h1>

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/Markdown";
 
 import { usePost } from "@/features/posts/hooks/usePost";
+import { useEffect } from "react";
 
 export function PostPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,10 @@ export function PostPage() {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Post not found.</p>;
+
+  useEffect(() => {
+    document.title = `${post?.title} | Arjan`;
+  }, []);
 
   return (
     <Card className="glass no-hover">

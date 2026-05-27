@@ -2,13 +2,16 @@ import { MotionGrid } from "@/components/MotionGrid";
 
 import { usePosts } from "@/features/posts/hooks/usePosts";
 import { PostCard } from "@/features/posts/components/PostCard";
+import { useEffect } from "react";
 
 export function BlogPage() {
   const { data: posts, isLoading, isError } = usePosts();
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Failed to load posts.</p>;
-
+  useEffect(() => {
+    document.title = "Blog | Arjan";
+  }, []);
   return (
     <section className="content-page">
       <h1>Blog</h1>
