@@ -16,7 +16,8 @@ import { usePost } from "@/features/posts/hooks/usePost";
 export function PostPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: post, isLoading, isError } = usePost(id ?? "");
+  if (!id) return <p>Invalid post.</p>;
+  const { data: post, isLoading, isError } = usePost(id);
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Post not found.</p>;

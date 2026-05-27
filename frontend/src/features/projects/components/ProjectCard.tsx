@@ -1,76 +1,42 @@
-import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { MotionItem } from "@/components/MotionItem";
 
 import type { Project } from "../types";
+
 import { CardSkeleton } from "./CardSkeleton";
 
-interface ParsedRepo {
-  owner: string;
-  repo: string;
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0 },
-};
-
-function parseGithubRepo(url: string): ParsedRepo | null {
-  const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-  if (!match) return null;
-  return {
-    owner: match[1],
-    repo: match[2].replace(".git", ""),
-  };
-}
+import { parseGithubRepo } from "../lib/github";
+import { useRepoLanguages } from "../hooks/useRepoLanguages";
 
 export function ProjectCard({ project }: { project: Project }) {
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [parsedRepo, setParsedRepo] = useState<ParsedRepo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const parsedRepo = parseGithubRepo(project.repo);
 
-  useEffect(() => {
-    const parsed = parseGithubRepo(project.repo);
-    if (!parsed) return;
+  const { data: languages = [], isLoading } = useRepoLanguages(
+    parsedRepo?.owner,
+    parsedRepo?.repo,
+  );
 
-    setParsedRepo(parsed);
-    setLoading(true);
-
-    fetch(
-      `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/languages`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setLanguages(Object.keys(data));
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [project.repo]);
+  if (!parsedRepo) return null;
 
   return (
-    <motion.div
-      variants={cardVariants}
-      transition={{ duration: 0.5 }}
-      viewport={{ margin: "-100px", amount: 0.3, once: false }}
-    >
-      {loading ? (
+    <MotionItem>
+      {isLoading ? (
         <CardSkeleton />
       ) : (
         <div
-          onClick={() => (window.location.href = project.repo)}
+          onClick={() => window.open(project.repo, "_blank")}
           className="glass cursor-pointer h-full flex flex-col overflow-hidden"
         >
           <div className="h-1/2 w-full">
             <img
               src={project.img_url}
               className="w-full h-full object-cover"
-              alt={parsedRepo?.repo}
+              alt={parsedRepo.repo}
             />
           </div>
+
           <div className="h-1/2 p-4 flex flex-col justify-between">
-            <h3 className="font-semibold text-lg">{parsedRepo?.repo}</h3>
+            <h3 className="font-semibold text-lg">{parsedRepo.repo}</h3>
+
             <div className="mt-2 flex gap-2 flex-wrap">
               {languages.map((lang) => (
                 <span key={lang} className="text-xs px-2 py-1 bg-muted rounded">
@@ -81,6 +47,6 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
         </div>
       )}
-    </motion.div>
+    </MotionItem>
   );
 }

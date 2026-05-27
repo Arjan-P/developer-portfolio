@@ -1,16 +1,7 @@
-import { motion } from "motion/react";
+import { MotionGrid } from "@/components/MotionGrid";
 
 import { usePosts } from "@/features/posts/hooks/usePosts";
 import { PostCard } from "@/features/posts/components/PostCard";
-
-const containerVariants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.15,
-    },
-  },
-};
 
 export function BlogPage() {
   const { data: posts, isLoading, isError } = usePosts();
@@ -21,13 +12,8 @@ export function BlogPage() {
   return (
     <section className="content-page">
       <h1>Blog</h1>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: false }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8"
-      >
+
+      <MotionGrid className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
         {[...(posts ?? [])]
           .sort(
             (a, b) =>
@@ -36,7 +22,7 @@ export function BlogPage() {
           .map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
-      </motion.div>
+      </MotionGrid>
     </section>
   );
 }

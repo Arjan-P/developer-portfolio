@@ -11,20 +11,12 @@ import {
 import { Markdown } from "@/components/Markdown";
 
 import type { Post } from "../types";
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0 },
-};
+import { MotionItem } from "@/components/MotionItem";
 
 export function PostCard({ post }: { post: Post }) {
   const navigate = useNavigate();
   return (
-    <motion.div
-      variants={cardVariants}
-      transition={{ duration: 0.5 }}
-      viewport={{ margin: "-100px", amount: 0.3, once: false }}
-    >
+    <MotionItem>
       <Card
         onClick={() => navigate(`/blog/${post.id}`)}
         className="glass cursor-pointer h-full flex flex-col"
@@ -41,6 +33,6 @@ export function PostCard({ post }: { post: Post }) {
           />
         </CardContent>
       </Card>
-    </motion.div>
+    </MotionItem>
   );
 }
