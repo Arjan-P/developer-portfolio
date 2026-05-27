@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 
 import {
