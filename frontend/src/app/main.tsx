@@ -6,17 +6,14 @@ import { RouterProvider } from "react-router-dom";
 
 import { router } from "./router";
 
-import { HelmetProvider } from "react-helmet-async";
 import { QueryProvider } from "./providers/QueryProvider";
 
 import "../styles/index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <HelmetProvider>
-      <QueryProvider>
-        <RouterProvider router={router} />
-      </QueryProvider>
-    </HelmetProvider>
+    <QueryProvider>
+      <RouterProvider router={router} />
+    </QueryProvider>
   </StrictMode>,
 );
