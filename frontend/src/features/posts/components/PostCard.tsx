@@ -1,0 +1,46 @@
+import { motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Markdown } from "@/components/Markdown";
+
+import type { Post } from "../types";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0 },
+};
+
+export function PostCard({ post }: { post: Post }) {
+  const navigate = useNavigate();
+  return (
+    <motion.div
+      variants={cardVariants}
+      transition={{ duration: 0.5 }}
+      viewport={{ margin: "-100px", amount: 0.3, once: false }}
+    >
+      <Card
+        onClick={() => navigate(`/blog/${post.id}`)}
+        className="glass cursor-pointer h-full flex flex-col"
+      >
+        <CardHeader>
+          <CardTitle>{post.title}</CardTitle>
+          <CardDescription>
+            {new Date(post.createdAt).toLocaleDateString()}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Markdown
+            content={post.content.split("\n")[0].substring(0, 50) + "..."}
+          />
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}

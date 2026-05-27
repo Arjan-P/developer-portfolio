@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react"
 import { motion } from "motion/react";
-import type { Project } from "@/types/projects"
-import { ProjectCard } from "@/components/ProjectCard";
 
+import { useProjects } from "@/features/projects/hooks/useProjects";
+import { ProjectCard } from "@/features/projects/components/ProjectCard";
 
 const containerVariants = {
   hidden: {},
@@ -14,17 +13,11 @@ const containerVariants = {
 };
 
 export function HomePage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL_DEV}/projects`)
-      .then(res => res.json())
-      .then(data => {
-        setProjects(data);
-        setLoading(false);
-      })
-  }, []);
-  if (loading) return <p>Loading...</p>
+  const { data: projects, isLoading, isError } = useProjects();
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Failed to load projects.</p>;
+
   return (
     <section className="content-page">
       <h1>About</h1>
@@ -37,10 +30,10 @@ export function HomePage() {
         viewport={{ once: false }}
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 sm:gap-8"
       >
-        {projects.map(project => (
+        {projects?.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
       </motion.div>
     </section>
-  )
+  );
 }

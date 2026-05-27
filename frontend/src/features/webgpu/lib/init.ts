@@ -115,7 +115,7 @@ fn fs_main(@location(0) uv : vec2<f32>) -> @location(0) vec4<f32> {
 
   return vec4<f32>(color, 1.0);
 }
-`
+`;
 
 export async function initWebGPU(canvas: HTMLCanvasElement) {
   if (!navigator.gpu) {
@@ -140,8 +140,8 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
   canvas.height = window.innerHeight;
   let mouse = {
     x: 0,
-    y: 0
-  }
+    y: 0,
+  };
   let mouseLag = { x: 0, y: 0 };
 
   const mousemoveHandler = (e: MouseEvent) => {
@@ -154,8 +154,7 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     const ndcY = ny * -2 + 1;
     mouse.x = ndcX;
     mouse.y = ndcY;
-    console.log(ndcX, ndcY);
-  }
+  };
   window.addEventListener("mousemove", mousemoveHandler);
 
   const uniformBufferSize = 16; // 16 bytes
@@ -216,18 +215,9 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
     mouseLag.x += (mouse.x - mouseLag.x) * Math.min(1, dt * smoothing);
     mouseLag.y += (mouse.y - mouseLag.y) * Math.min(1, dt * smoothing);
 
-    const uniformData = new Float32Array([
-      time,
-      dt,
-      mouseLag.x,
-      mouseLag.y
-    ]);
+    const uniformData = new Float32Array([time, dt, mouseLag.x, mouseLag.y]);
 
-    device.queue.writeBuffer(
-      uniformBuffer,
-      0,
-      uniformData.buffer
-    );
+    device.queue.writeBuffer(uniformBuffer, 0, uniformData.buffer);
 
     const textureView = context.getCurrentTexture().createView();
 
@@ -257,6 +247,6 @@ export async function initWebGPU(canvas: HTMLCanvasElement) {
 
   return () => {
     cancelAnimationFrame(animationId);
-    window.removeEventListener("mousemove", mousemoveHandler)
+    window.removeEventListener("mousemove", mousemoveHandler);
   };
 }
