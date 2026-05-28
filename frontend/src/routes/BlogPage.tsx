@@ -7,11 +7,12 @@ import { useEffect } from "react";
 export function BlogPage() {
   const { data: posts, isLoading, isError } = usePosts();
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Failed to load posts.</p>;
   useEffect(() => {
     document.title = "Blog | Arjan";
   }, []);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Failed to load posts.</p>;
   return (
     <section className="content-page">
       <h1>Blog</h1>

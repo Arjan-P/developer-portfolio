@@ -7,11 +7,12 @@ import { useEffect } from "react";
 export function HomePage() {
   const { data: projects, isLoading, isError } = useProjects();
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Failed to load projects.</p>;
   useEffect(() => {
     document.title = "Home | Arjan";
   }, []);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Failed to load projects.</p>;
   return (
     <section className="content-page">
       <h1>About</h1>

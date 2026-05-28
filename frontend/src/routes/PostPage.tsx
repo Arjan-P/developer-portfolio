@@ -17,27 +17,37 @@ import { useEffect } from "react";
 export function PostPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  if (!id) return <p>Invalid post.</p>;
-  const { data: post, isLoading, isError } = usePost(id);
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Post not found.</p>;
+  const { data: post, isLoading, isError } = usePost(id ?? "");
 
   useEffect(() => {
-    document.title = `${post?.title} | Arjan`;
-  }, []);
+    if (post?.title) {
+      document.title = `${post.title} | Arjan`;
+    }
+  }, [post]);
+
+  if (!id) return <p>Invalid post.</p>;
+
+  if (isLoading) return <p>Loading...</p>;
+
+  if (isError) return <p>Post not found.</p>;
 
   return (
     <Card className="glass no-hover">
       <CardHeader>
         <CardTitle>{post?.title}</CardTitle>
+
         <CardDescription>
           {post ? new Date(post.createdAt).toLocaleDateString() : ""}
         </CardDescription>
       </CardHeader>
+
       <Separator />
+
       <CardContent>{post && <Markdown content={post.content} />}</CardContent>
+
       <Separator />
+
       <Button onClick={() => navigate("/blog")} className="mx-auto max-w-3sm">
         Back
       </Button>
