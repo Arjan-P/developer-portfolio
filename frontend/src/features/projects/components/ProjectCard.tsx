@@ -24,7 +24,7 @@ export function ProjectCard({ project }: { project: Project }) {
       ) : (
         <div
           onClick={() => window.open(project.repo, "_blank")}
-          className="glass cursor-pointer h-full flex flex-col overflow-hidden"
+          className="glass cursor-pointer h-[320px] flex flex-col overflow-hidden will-change-transform"
         >
           <div className="h-1/2 w-full">
             <img

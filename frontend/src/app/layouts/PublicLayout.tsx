@@ -4,7 +4,7 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 
 import { Navbar } from "@/components/Navbar";
 import { PageTransition } from "@/components/PageTransition";
-import WebGPUBackground from "@/features/webgpu/components/WebGPUBackground";
+// import WebGPUBackground from "@/features/webgpu/components/WebGPUBackground";
 
 export function PublicLayout() {
   const { scrollY } = useScroll();
@@ -17,7 +17,7 @@ export function PublicLayout() {
 
   return (
     <div className="layout">
-      <WebGPUBackground />
+      {/*<WebGPUBackground />*/}
       <motion.header className="navbar-wrapper">
         <motion.div
           className="glass no-hover w-full p-3"
